@@ -24,6 +24,7 @@ Then visit `http://localhost:8000`.
 - Click the mini-map to walk toward a location.
 - Use **Next**, **Back**, and **Replay** for the guided tour. Auto Tour can advance the tour for you.
 - Select an exhibit to see its photo enlarged beside the narration.
+- Open the **Jukebox** in the upper-right of the museum to add and switch between as many audio files as you like. Music plays in the background while you explore; files are not uploaded, and the playlist resets when you reload the page.
 
 ## Personalize the museum
 
@@ -42,6 +43,10 @@ Place your eight images in `assets/photos/` using these names:
 - `photo1.jpg` through `photo5.jpg`, `photo6.jpeg`, and `photo7.jpg` through `photo8.jpg`
 
 Photos stay smooth in their frames and open in a larger preview when selected. The game draws a colored pixel-art placeholder if a photo is missing. Keep the filenames or update each exhibit's `img` value in `config.js`.
+
+## Add background music
+
+Put audio files in `assets/music/` (for example, MP3, WAV, OGG, or M4A). In the game, open **Jukebox** in the upper-right, click the file chooser, browse to `assets/music/`, and select as many songs as you like. You can also add more tracks in later selections. The browser does not automatically scan the folder; you need to choose the files. The playlist is temporary and must be re-added after reloading the page.
 
 ## Voice notes
 

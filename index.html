@@ -21,6 +21,19 @@
     <section class="game-frame" aria-label="Museum game">
       <canvas id="game" width="480" height="300" aria-label="Top-down pixel art museum game"></canvas>
       <div class="artwork-layer" id="artwork-layer" aria-hidden="true"></div>
+      <details class="jukebox">
+        <summary>♫ JUKEBOX</summary>
+        <div class="jukebox-panel">
+          <label for="jukebox-files">ADD SONGS FROM assets/music/ (NO LIMIT)</label>
+          <input id="jukebox-files" type="file" accept="audio/*" multiple>
+          <select id="jukebox-track" aria-label="Choose background music" disabled>
+            <option value="">No songs added</option>
+          </select>
+          <audio id="background-music" controls preload="none" aria-label="Background music player"></audio>
+          <button class="pixel-button small" id="jukebox-clear" type="button" disabled>CLEAR PLAYLIST</button>
+          <p id="jukebox-status" aria-live="polite">Add as many tracks as you like from assets/music/. The playlist resets when you reload.</p>
+        </div>
+      </details>
       <div class="map-frame"><div class="map-label">MUSEUM MAP</div><canvas id="mini-map" width="108" height="72" aria-label="Museum mini map"></canvas></div>
       <div class="objective" id="objective">Explore the museum. Find the glowing exhibits!</div>
       <div class="interaction-hint hidden" id="interaction-hint">Press E to interact</div>

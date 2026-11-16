@@ -6,6 +6,11 @@
   const ctx = canvas.getContext('2d');
   const mapCanvas = $('mini-map');
   const mapCtx = mapCanvas.getContext('2d');
+  const musicPlayer = $('background-music');
+  const musicTrack = $('jukebox-track');
+  const musicFiles = $('jukebox-files');
+  const musicStatus = $('jukebox-status');
+  const musicPlaylist = [];
   const portrait = $('portrait').getContext('2d');
   const TILE = 32, COLS = 36, ROWS = 24, WORLD_W = COLS * TILE, WORLD_H = ROWS * TILE;
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
@@ -87,6 +92,72 @@
     $('start-voice').textContent = voiceOn ? 'ON' : 'OFF';
     if (!voiceOn) stopSpeech();
   }
+
+  function playMusicTrack(index) {
+    if (!musicPlaylist.length) return;
+    musicTrack.selectedIndex = index;
+    musicPlayer.src = musicPlaylist[index].url;
+    musicPlayer.load();
+    musicPlayer.play().then(() => {
+      musicStatus.textContent = `Now playing: ${musicPlaylist[index].name}`;
+    }).catch(() => {
+      musicStatus.textContent = `Couldn't play "${musicPlaylist[index].name}". Try another audio file or press play.`;
+    });
+  }
+
+  musicFiles.addEventListener('change', () => {
+    const selectedFiles = Array.from(musicFiles.files || []);
+    const filesToAdd = selectedFiles;
+    if (filesToAdd.length && musicPlaylist.length === 0) musicTrack.options.length = 0;
+    filesToAdd.forEach((file) => {
+      const url = URL.createObjectURL(file);
+      musicPlaylist.push({ name: file.name, url });
+      const option = document.createElement('option');
+      option.value = String(musicPlaylist.length - 1);
+      option.textContent = file.name;
+      musicTrack.appendChild(option);
+    });
+    musicFiles.value = '';
+    musicTrack.disabled = musicPlaylist.length === 0;
+    $('jukebox-clear').disabled = musicPlaylist.length === 0;
+    if (filesToAdd.length) {
+      playMusicTrack(musicPlaylist.length - filesToAdd.length);
+    }
+  });
+
+  $('jukebox-clear').addEventListener('click', () => {
+    musicPlayer.pause();
+    musicPlayer.removeAttribute('src');
+    musicPlayer.load();
+    musicPlaylist.forEach((track) => URL.revokeObjectURL(track.url));
+    musicPlaylist.length = 0;
+    while (musicTrack.firstChild) musicTrack.removeChild(musicTrack.firstChild);
+    const emptyOption = document.createElement('option');
+    emptyOption.value = '';
+    emptyOption.textContent = 'No songs added';
+    musicTrack.appendChild(emptyOption);
+    musicTrack.disabled = true;
+    $('jukebox-clear').disabled = true;
+    musicStatus.textContent = 'Playlist cleared. Choose audio files from your device to start again.';
+  });
+
+  musicTrack.addEventListener('change', () => {
+    const index = Number(musicTrack.value);
+    if (Number.isInteger(index) && musicPlaylist[index]) playMusicTrack(index);
+  });
+  musicPlayer.addEventListener('ended', () => {
+    if (musicPlaylist.length > 1) {
+      playMusicTrack((musicTrack.selectedIndex + 1) % musicPlaylist.length);
+    } else if (musicPlaylist.length === 1) {
+      playMusicTrack(0);
+    }
+  });
+  musicPlayer.addEventListener('error', () => {
+    if (musicPlaylist.length) musicStatus.textContent = 'This audio file could not be played. Try another file format.';
+  });
+  window.addEventListener('beforeunload', () => {
+    musicPlaylist.forEach((track) => URL.revokeObjectURL(track.url));
+  });
 
   function drawPortrait() {
     portrait.clearRect(0, 0, 64, 64);
@@ -380,7 +451,7 @@
   }
 
   document.addEventListener('keydown',(e)=>{
-    if(e.target && (e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'))return;
+    if(e.target && (e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT'||e.target.closest('.jukebox')))return;
     if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();
     const key=e.key.length===1?e.key.toLowerCase():e.key;keys.add(key);
     if((key==='e'||key===' '||key==='Enter')&&!e.repeat&&$('start-screen').classList.contains('hidden')){interact();}
