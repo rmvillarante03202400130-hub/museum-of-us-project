@@ -8,9 +8,14 @@
   const mapCtx = mapCanvas.getContext('2d');
   const musicPlayer = $('background-music');
   const musicTrack = $('jukebox-track');
+  const musicFileInput = $('jukebox-add');
+  const musicVolumeControl = $('jukebox-volume');
+  const musicVolumeValue = $('jukebox-volume-value');
   const musicFiles = $('jukebox-files');
+  const musicFolder = $('jukebox-folder');
   const musicStatus = $('jukebox-status');
   const musicPlaylist = [];
+  musicPlayer.volume = Number(musicVolumeControl.value) / 100;
   const portrait = $('portrait').getContext('2d');
   const TILE = 32, COLS = 36, ROWS = 24, WORLD_W = COLS * TILE, WORLD_H = ROWS * TILE;
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
@@ -94,56 +99,102 @@
   }
 
   function playMusicTrack(index) {
-    if (!musicPlaylist.length) return;
+    const track = musicPlaylist[index];
+    if (!track) return;
     musicTrack.selectedIndex = index;
-    musicPlayer.src = musicPlaylist[index].url;
+    musicPlayer.src = track.url;
     musicPlayer.load();
     musicPlayer.play().then(() => {
-      musicStatus.textContent = `Now playing: ${musicPlaylist[index].name}`;
-    }).catch(() => {
-      musicStatus.textContent = `Couldn't play "${musicPlaylist[index].name}". Try another audio file or press play.`;
+      if (musicPlaylist[index] === track && musicTrack.selectedIndex === index) {
+        musicStatus.textContent = `Now playing: ${track.name}`;
+      }
+    }).catch((error) => {
+      if (musicPlaylist[index] === track && musicTrack.selectedIndex === index) {
+        musicStatus.textContent = error.name === 'NotAllowedError'
+          ? `Autoplay was blocked. Press Start Exploring or Play to start "${track.name}".`
+          : `Couldn't load "${track.name}". Verify the audio file and open the museum from localhost instead of file://.`;
+      }
     });
   }
 
-  musicFiles.addEventListener('change', () => {
-    const selectedFiles = Array.from(musicFiles.files || []);
-    const filesToAdd = selectedFiles;
-    if (filesToAdd.length && musicPlaylist.length === 0) musicTrack.options.length = 0;
-    filesToAdd.forEach((file) => {
-      const url = URL.createObjectURL(file);
-      musicPlaylist.push({ name: file.name, url });
+  function loadConfiguredMusic() {
+    const tracks = Array.isArray(CONFIG.musicTracks) ? CONFIG.musicTracks : [];
+    tracks.forEach((url) => {
+      musicPlaylist.push({ name: url.slice(url.lastIndexOf('/') + 1), url, temporary: false });
+    });
+    musicPlaylist.sort((a, b) => b.name.localeCompare(a.name, undefined, { sensitivity: 'base' }));
+    renderMusicTracks();
+    if (musicPlaylist.length) {
+      musicStatus.textContent = `Starting automatic Z-to-A playlist (${musicPlaylist.length} songs).`;
+      const startPlayback = () => {
+        if (musicPlaylist.length && musicPlayer.paused) {
+          playMusicTrack(musicTrack.selectedIndex >= 0 ? musicTrack.selectedIndex : 0);
+        }
+      };
+      if (document.readyState === 'complete') startPlayback();
+      else window.addEventListener('load', startPlayback, { once: true });
+    } else {
+      musicStatus.textContent = 'No music tracks are configured. Add audio files to start playing.';
+    }
+  }
+
+  function renderMusicTracks() {
+    musicTrack.options.length = 0;
+    musicPlaylist.forEach((track, index) => {
       const option = document.createElement('option');
-      option.value = String(musicPlaylist.length - 1);
-      option.textContent = file.name;
+      option.value = String(index);
+      option.textContent = track.name;
       musicTrack.appendChild(option);
     });
-    musicFiles.value = '';
     musicTrack.disabled = musicPlaylist.length === 0;
-    $('jukebox-clear').disabled = musicPlaylist.length === 0;
-    if (filesToAdd.length) {
-      playMusicTrack(musicPlaylist.length - filesToAdd.length);
+    if (!musicPlaylist.length) {
+      const emptyOption = document.createElement('option');
+      emptyOption.value = '';
+      emptyOption.textContent = 'No music available';
+      musicTrack.appendChild(emptyOption);
     }
-  });
-
-  $('jukebox-clear').addEventListener('click', () => {
-    musicPlayer.pause();
-    musicPlayer.removeAttribute('src');
-    musicPlayer.load();
-    musicPlaylist.forEach((track) => URL.revokeObjectURL(track.url));
-    musicPlaylist.length = 0;
-    while (musicTrack.firstChild) musicTrack.removeChild(musicTrack.firstChild);
-    const emptyOption = document.createElement('option');
-    emptyOption.value = '';
-    emptyOption.textContent = 'No songs added';
-    musicTrack.appendChild(emptyOption);
-    musicTrack.disabled = true;
-    $('jukebox-clear').disabled = true;
-    musicStatus.textContent = 'Playlist cleared. Choose audio files from your device to start again.';
-  });
+  }
 
   musicTrack.addEventListener('change', () => {
     const index = Number(musicTrack.value);
     if (Number.isInteger(index) && musicPlaylist[index]) playMusicTrack(index);
+  });
+  musicVolumeControl.addEventListener('input', () => {
+    musicPlayer.volume = Number(musicVolumeControl.value) / 100;
+  });
+  musicPlayer.addEventListener('volumechange', () => {
+    const volume = Math.round(musicPlayer.volume * 100);
+    musicVolumeControl.value = String(volume);
+    musicVolumeValue.textContent = `${volume}%`;
+  });
+
+  musicFileInput.addEventListener('change', () => {
+    const files = Array.from(musicFileInput.files || []);
+    musicFileInput.value = '';
+    if (!files.length) return;
+
+    const audioExtension = /\.(mp3|m4a|aac|ogg|oga|opus|wav|flac|webm|aiff|aif)$/i;
+    const audioFiles = files.filter((file) => file.type.startsWith('audio/') || audioExtension.test(file.name));
+    const addedTracks = audioFiles.map((file) => ({
+      name: file.name,
+      url: URL.createObjectURL(file),
+      temporary: true,
+    }));
+
+    musicPlaylist.push(...addedTracks);
+    musicPlaylist.sort((a, b) => b.name.localeCompare(a.name, undefined, { sensitivity: 'base' }));
+    renderMusicTracks();
+
+    if (addedTracks.length) {
+      const firstAdded = addedTracks.sort((a, b) => b.name.localeCompare(a.name, undefined, { sensitivity: 'base' }))[0];
+      const index = musicPlaylist.indexOf(firstAdded);
+      playMusicTrack(index);
+      musicStatus.textContent = files.length === audioFiles.length
+        ? `Added ${audioFiles.length} song${audioFiles.length === 1 ? '' : 's'}; starting "${firstAdded.name}".`
+        : `Added ${audioFiles.length} song${audioFiles.length === 1 ? '' : 's'}; skipped ${files.length - audioFiles.length} non-audio file${files.length - audioFiles.length === 1 ? '' : 's'}.`;
+    } else {
+      musicStatus.textContent = 'No audio files were added. Choose audio files such as MP3, M4A, WAV, or OGG.';
+    }
   });
   musicPlayer.addEventListener('ended', () => {
     if (musicPlaylist.length > 1) {
@@ -153,10 +204,10 @@
     }
   });
   musicPlayer.addEventListener('error', () => {
-    if (musicPlaylist.length) musicStatus.textContent = 'This audio file could not be played. Try another file format.';
+    if (musicPlaylist.length) musicStatus.textContent = 'The audio could not be loaded. Check the file path, or open the museum from localhost instead of file://.';
   });
   window.addEventListener('beforeunload', () => {
-    musicPlaylist.forEach((track) => URL.revokeObjectURL(track.url));
+    musicPlaylist.filter((track) => track.temporary).forEach((track) => URL.revokeObjectURL(track.url));
   });
 
   function drawPortrait() {
@@ -446,6 +497,7 @@
 
   function startGame(){
     if(started)return;started=true;$('start-screen').classList.add('hidden');
+    if(musicPlaylist.length&&musicPlayer.paused)playMusicTrack(musicTrack.selectedIndex>=0?musicTrack.selectedIndex:0);
     if(synth&&voiceOn){try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;synth.speak(u);}catch(_){}}
     player.x=guide.x+34;player.y=guide.y+34;showDialogue(0);setObjective('Walk with WASD / arrow keys. Press E near a person or exhibit.');
   }
@@ -484,5 +536,5 @@
   });
   $('start-subtitle').textContent=`A pixel adventure for ${CONFIG.herName}`;
   $('letter-title').textContent=fill(CONFIG.finale.closingTitle);
-  drawPortrait();setVoice(true);requestAnimationFrame(drawFrame);
+  drawPortrait();setVoice(true);loadConfiguredMusic();requestAnimationFrame(drawFrame);
 })();

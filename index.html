@@ -24,14 +24,17 @@
       <details class="jukebox">
         <summary>♫ JUKEBOX</summary>
         <div class="jukebox-panel">
-          <label for="jukebox-files">ADD SONGS FROM assets/music/ (NO LIMIT)</label>
-          <input id="jukebox-files" type="file" accept="audio/*" multiple>
+          <label for="jukebox-track">CHOOSE A SONG (Z TO A)</label>
           <select id="jukebox-track" aria-label="Choose background music" disabled>
-            <option value="">No songs added</option>
+            <option value="">Loading playlist…</option>
           </select>
-          <audio id="background-music" controls preload="none" aria-label="Background music player"></audio>
-          <button class="pixel-button small" id="jukebox-clear" type="button" disabled>CLEAR PLAYLIST</button>
-          <p id="jukebox-status" aria-live="polite">Add as many tracks as you like from assets/music/. The playlist resets when you reload.</p>
+          <label for="jukebox-add">ADD SONGS</label>
+          <input id="jukebox-add" type="file" accept="audio/*" multiple aria-describedby="jukebox-add-help">
+          <p id="jukebox-add-help">Choose one or more audio files to add for this visit.</p>
+          <label for="jukebox-volume">VOLUME <output id="jukebox-volume-value" for="jukebox-volume">25%</output></label>
+          <input id="jukebox-volume" type="range" min="0" max="100" step="1" value="25" aria-label="Music volume">
+          <audio id="background-music" controls autoplay preload="auto" aria-label="Background music player"></audio>
+          <p id="jukebox-status" aria-live="polite">Music starts automatically. Choose or add songs here to change the background music.</p>
         </div>
       </details>
       <div class="map-frame"><div class="map-label">MUSEUM MAP</div><canvas id="mini-map" width="108" height="72" aria-label="Museum mini map"></canvas></div>
@@ -64,7 +67,7 @@
     </section>
 
     <footer class="bottom-bar">
-      <span>MOVE: WASD / ARROW KEYS</span><span>INTERACT: E / SPACE</span>
+      <span>MOVE: WASD / ARROW KEYS</span><span>INTERACT: E / SPACE</span><span>MUSIC: JUKEBOX TOP-RIGHT</span>
       <a href="mailto:ravenvillarante231@gmail.com">DEVELOPER CONTACT</a>
     </footer>
   </main>
@@ -75,6 +78,15 @@
       <h1>THE<br><span>MUSEUM</span><br>OF US</h1>
       <p class="start-subtitle" id="start-subtitle">A pixel adventure for Babi</p>
       <p class="start-copy">Walk through a museum of little moments, meet your curator, and discover every piece of the story.</p>
+      <div class="start-instructions" aria-label="How to navigate the museum">
+        <strong>HOW TO EXPLORE</strong>
+        <ul>
+          <li><b>MOVE:</b> WASD / arrow keys, or the on-screen D-pad.</li>
+          <li><b>INTERACT:</b> Press E or Space near the curator or a glowing exhibit.</li>
+          <li><b>TOUR:</b> Use Back, Next, and Replay below the museum; click the mini-map to walk somewhere.</li>
+          <li><b>MUSIC:</b> Open the Jukebox in the upper-right to choose or add songs.</li>
+        </ul>
+      </div>
       <div class="voice-setting"><span>VOICE-GUIDED TOUR</span><button class="pixel-button" id="start-voice" type="button">ON</button></div>
       <button class="pixel-button primary start-button" id="start-game" type="button">START EXPLORING ▶</button>
       <small class="start-note">Best experienced with sound on. You can also play using the on-screen controls.</small>

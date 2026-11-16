@@ -1,5 +1,5 @@
 /* Museum of Us — project configuration.
-   Edit names, narration, exhibits, wishes, and voice preferences here. */
+   Edit names, music, narration, exhibits, wishes, and voice preferences here. */
 const CONFIG = {
   developer: {
     name: "Raven Villarante",
@@ -7,6 +7,19 @@ const CONFIG = {
   },
   herName: "Babi",
   yourName: "Bebu",
+  musicTracks: [
+    "assets/music/Diwata.mp3",
+    "assets/music/I Wanna Be Yours.mp3",
+    "assets/music/Labyu Langga.mp3",
+    "assets/music/Love_Me_Like_You.mp3",
+    "assets/music/Maria Clara.mp3",
+    "assets/music/Natataranta.mp3",
+    "assets/music/Sexy Lady.mp3",
+    "assets/music/Shape of My Heart.mp3",
+    "assets/music/Stuck_with_U.mp3",
+    "assets/music/Tingin.mp3",
+    "assets/music/To the Bone.mp3",
+  ],
   guide: {
     name: "Curator Milo",
     role: "MUSEUM GUIDE",

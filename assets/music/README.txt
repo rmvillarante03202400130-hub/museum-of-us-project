@@ -1,8 +1,7 @@
-Add as many music files as you like to this folder.
+Place music files in this folder and add their paths to `musicTracks` in
+`config.js` to have them load automatically on every visit. Tracks play in
+Z-to-A filename order.
 
-In the game, open the Jukebox, click its file chooser, browse to this folder,
-and select the songs you want. Supported formats depend on your browser;
-MP3, WAV, OGG, and M4A are common options.
-
-The browser does not automatically scan this folder. The selected playlist
-resets when the game page is reloaded.
+You can also open the Jukebox in the upper-right and use **Add Songs** to
+choose audio files from your device. Those songs join the playlist and play
+for the current visit only.

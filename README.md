@@ -24,7 +24,7 @@ Then visit `http://localhost:8000`.
 - Click the mini-map to walk toward a location.
 - Use **Next**, **Back**, and **Replay** for the guided tour. Auto Tour can advance the tour for you.
 - Select an exhibit to see its photo enlarged beside the narration.
-- Open the **Jukebox** in the upper-right of the museum to add and switch between as many audio files as you like. Music plays in the background while you explore; files are not uploaded, and the playlist resets when you reload the page.
+- Music from the available `assets/music/` tracks starts automatically in Z-to-A filename order at 25% volume. Adjust the volume in the **Jukebox** in the upper-right, switch songs, or select **Add Songs** to add audio files from your device. Added files join the Z-to-A playlist and play during the current visit; the browser does not save them between visits. If the browser blocks audible autoplay, click **Start Exploring** to retry.
 
 ## Personalize the museum
 
@@ -34,6 +34,7 @@ Edit `config.js`:
 - `herName` and `yourName`: names shown in the welcome and closing messages.
 - `guide.name`: curator's displayed name.
 - `guide.voice`: language, rate, pitch, and voice-style preference.
+- `musicTracks`: audio files automatically loaded from `assets/music/` and played Z-to-A. Add file paths here to include bundled tracks on every visit.
 - `lobby`, `exhibits`, and `finale`: all tour narration, exhibit details, wishes, and the closing letter.
 
 ## Add your photos
@@ -44,9 +45,9 @@ Place your eight images in `assets/photos/` using these names:
 
 Photos stay smooth in their frames and open in a larger preview when selected. The game draws a colored pixel-art placeholder if a photo is missing. Keep the filenames or update each exhibit's `img` value in `config.js`.
 
-## Add background music
+## Background music
 
-Put audio files in `assets/music/` (for example, MP3, WAV, OGG, or M4A). In the game, open **Jukebox** in the upper-right, click the file chooser, browse to `assets/music/`, and select as many songs as you like. You can also add more tracks in later selections. The browser does not automatically scan the folder; you need to choose the files. The playlist is temporary and must be re-added after reloading the page.
+The paths in `musicTracks` in `config.js` are loaded automatically in Z-to-A filename order at 25% volume. Adjust the level with the Jukebox volume slider, choose any listed song to change the background music, or select **Add Songs** to add audio files from your device for the current visit. To include a track on every visit, place it in `assets/music/` and add its path to `musicTracks` in `config.js`.
 
 ## Voice notes
 
